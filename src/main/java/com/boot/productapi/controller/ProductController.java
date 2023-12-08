@@ -1,15 +1,21 @@
 package com.boot.productapi.controller;
 
+import com.boot.productapi.dto.ProductDto;
 import com.boot.productapi.entity.Product;
 import com.boot.productapi.services.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -17,12 +23,14 @@ import java.util.Optional;
 public class ProductController {
 	@Autowired
 	private final ProductService productService;
+	private ModelMapper modelMapper;
 
 	// Create a new product
 	@PostMapping("/product")
-	public ResponseEntity<ResponseEntity<Product>> saveProduct(@RequestBody Product product) {
+	public ResponseEntity<Product> saveProduct(@Valid @RequestBody  Product product) {
 		ResponseEntity<Product> newProduct = productService.saveProduct(product);
-		return ResponseEntity.ok(newProduct);
+		URI uri = URI.create("/product/" + Objects.requireNonNull(newProduct.getBody()).getId());
+		return ResponseEntity.created(uri).body(newProduct.getBody());
 	}
 
 	// Get all products
@@ -53,6 +61,16 @@ public class ProductController {
 	public ResponseEntity<String> deleteProduct(@PathVariable Long productId) {
 		return productService.deleteProduct(productId);
 
+	}
+
+	private ProductDto entity2Dto(Product entity) {
+		return modelMapper.map(entity, ProductDto.class);
+	}
+
+	private List<ProductDto> list2Dto(List<Product> listUsers) {
+		return listUsers.stream().map(
+						this::entity2Dto)
+				.collect(Collectors.toList());
 	}
 
 }

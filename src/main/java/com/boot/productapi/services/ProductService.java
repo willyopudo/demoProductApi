@@ -41,7 +41,7 @@ public class ProductService {
 			throw new IllegalArgumentException("ID cannot be null");
 		}
 		if(!Objects.equals(updatedProduct.getId(), id))
-			return ResponseEntity.status(403).build();
+			return ResponseEntity.status(400).build();
 		Product Existingproduct = productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
 		Existingproduct.setName(updatedProduct.getName());
 		Existingproduct.setPrice(updatedProduct.getPrice());
